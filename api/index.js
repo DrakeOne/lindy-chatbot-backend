@@ -27,9 +27,9 @@ module.exports = async (req, res) => {
 
         try {
             // Construye la URL de callback apuntando a este mismo servidor.
-            const callbackURL = `https://${req.headers.host}/api?requestId=${requestId}`;
+            const callbackUrl = `https://${req.headers.host}/api?requestId=${requestId}`;
             
-            // Llama al webhook de Lindy, pasando el mensaje y la callbackURL.
+            // Llama al webhook de Lindy, pasando el mensaje y la callbackUrl.
             // Las claves secretas se leen de las Variables de Entorno de Vercel.
             await fetch(process.env.LINDY_WEBHOOK_URL, {
                 method: 'POST',
@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${process.env.LINDY_SECRET_KEY}`
                 },
-                body: JSON.stringify({ message: message, callbackURL: callbackURL })
+                body: JSON.stringify({ message: message, callbackUrl: callbackUrl })
             });
 
             // Almacena la función de respuesta para usarla cuando Lindy llame de vuelta.
