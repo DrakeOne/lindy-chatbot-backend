@@ -1,5 +1,6 @@
 // Archivo: /api/index.js
 // Servidor intermediario para Lindy AI, optimizado para Vercel.
+// VERSIÓN CON MEMORIA - Soporta conversationId para mantener contexto
 
 const fetch = require('node-fetch');
 
@@ -19,7 +20,8 @@ module.exports = async (req, res) => {
 
     // --- RUTA 1: Llamada desde el frontend del chatbot ---
     if (req.body && req.body.message) {
-        const { message, requestId } = req.body;
+        // ✅ CAMBIO: Ahora también recibimos el conversationId (puede ser nulo al principio)
+        const { message, requestId, conversationId } = req.body;
 
         if (!requestId) {
             return res.status(400).json({ error: 'Falta requestId.' });
@@ -29,6 +31,17 @@ module.exports = async (req, res) => {
             // Construye la URL de callback apuntando a este mismo servidor.
             const callbackUrl = `https://${req.headers.host}/api?requestId=${requestId}`;
             
+            // ✅ CAMBIO: Creamos el cuerpo de la petición dinámicamente
+            const requestBody = {
+                message: message,
+                callbackUrl: callbackUrl
+            };
+            
+            // Si hay un ID de conversación, lo añadimos a la petición
+            if (conversationId) {
+                requestBody.conversationId = conversationId;
+            }
+            
             // Llama al webhook de Lindy, pasando el mensaje y la callbackUrl.
             // Las claves secretas se leen de las Variables de Entorno de Vercel.
             await fetch(process.env.LINDY_WEBHOOK_URL, {
@@ -37,7 +50,7 @@ module.exports = async (req, res) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${process.env.LINDY_SECRET_KEY}`
                 },
-                body: JSON.stringify({ message: message, callbackUrl: callbackUrl })
+                body: JSON.stringify(requestBody)
             });
 
             // Almacena la función de respuesta para usarla cuando Lindy llame de vuelta.
