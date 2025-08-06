@@ -1,0 +1,9 @@
+{
+  "name": "lindy-chatbot-backend",
+  "version": "1.0.0",
+  "description": "Servidor intermediario para el chatbot de Lindy",
+  "main": "api/index.js",
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  }
+}
